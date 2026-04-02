@@ -54,6 +54,7 @@ app.post("/satelliteSearch", async (req, res) => {
 
     return res.json({ results });
   } catch (err) {
+    console.error("satelliteSearch error:", err);
     return res.status(500).json({
       error: "Search failed",
       details: err.message
@@ -81,7 +82,7 @@ app.post("/getSatellitePosition", async (req, res) => {
     const url =
       `https://api.n2yo.com/rest/v1/satellite/positions/${noradId}` +
       `/${observerLat}/${observerLng}/${observerAlt}/${seconds}` +
-      `/&apiKey=${N2YO_API_KEY}`;
+      `/?apiKey=${N2YO_API_KEY}`;
 
     const response = await fetch(url);
     const text = await response.text();
@@ -90,13 +91,15 @@ app.post("/getSatellitePosition", async (req, res) => {
     try {
       data = JSON.parse(text);
     } catch {
+      console.error("N2YO non-JSON response:", text);
       return res.status(502).json({
         error: "N2YO returned non-JSON",
-        details: text.slice(0, 300)
+        details: text.slice(0, 500)
       });
     }
 
     if (!response.ok) {
+      console.error("N2YO request failed:", data);
       return res.status(502).json({
         error: "N2YO request failed",
         details: data
@@ -107,6 +110,7 @@ app.post("/getSatellitePosition", async (req, res) => {
     const pos = data.positions?.[0];
 
     if (!pos) {
+      console.error("No satellite position returned:", data);
       return res.status(502).json({
         error: "No satellite position returned",
         details: data
@@ -126,6 +130,7 @@ app.post("/getSatellitePosition", async (req, res) => {
       source: "N2YO"
     });
   } catch (err) {
+    console.error("getSatellitePosition error:", err);
     return res.status(500).json({
       error: "Position fetch failed",
       details: err.message
