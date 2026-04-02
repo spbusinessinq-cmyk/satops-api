@@ -76,11 +76,12 @@ app.post("/getSatellitePosition", async (req, res) => {
     const observerLat = 34.0522;
     const observerLng = -118.2437;
     const observerAlt = 71;
-    const seconds = 1;
+    const seconds = 2;
 
     const url =
       `https://api.n2yo.com/rest/v1/satellite/positions/${noradId}` +
-      `/${observerLat}/${observerLng}/${observerAlt}/${seconds}/?apiKey=${N2YO_API_KEY}`;
+      `/${observerLat}/${observerLng}/${observerAlt}/${seconds}` +
+      `/&apiKey=${N2YO_API_KEY}`;
 
     const response = await fetch(url);
     const text = await response.text();
@@ -96,7 +97,7 @@ app.post("/getSatellitePosition", async (req, res) => {
     }
 
     if (!response.ok) {
-      return res.status(response.status).json({
+      return res.status(502).json({
         error: "N2YO request failed",
         details: data
       });
@@ -106,7 +107,7 @@ app.post("/getSatellitePosition", async (req, res) => {
     const pos = data.positions?.[0];
 
     if (!pos) {
-      return res.status(404).json({
+      return res.status(502).json({
         error: "No satellite position returned",
         details: data
       });
